@@ -45,7 +45,7 @@ func (a *Api) NewServer(host string, cfg configuration.HTTPConfig) *http.Server 
 	// Handlers
 	r.HandleFunc("/healthcheck", a.Healthcheck.Get).Methods(http.MethodGet)
 	r.HandleFunc("/metrics", promhttp.Handler().ServeHTTP).Methods(http.MethodGet)
-	r.HandleFunc("/service/v0/notifications", a.notifications.Create).Methods(http.MethodPost)
+	r.HandleFunc("/api/v0/notifications", a.notifications.Create).Methods(http.MethodPost)
 
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
 
