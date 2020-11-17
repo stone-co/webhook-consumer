@@ -13,7 +13,8 @@ setup:
 	@echo "==> Setup: Getting tools"
 	go mod tidy
 	GO111MODULE=on go install \
-	github.com/golangci/golangci-lint/cmd/golangci-lint
+	github.com/golangci/golangci-lint/cmd/golangci-lint \
+	github.com/kyoh86/richgo
 
 .PHONY: test
 test:
