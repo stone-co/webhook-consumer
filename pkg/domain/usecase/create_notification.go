@@ -7,6 +7,6 @@ import (
 )
 
 func (uc NotificationUsecase) CreateNotification(ctx context.Context, input domain.CreateNotificationInput) error {
-	uc.method.Send(ctx, input.Body)
-	return nil
+	err := uc.method.Send(ctx, input.Body)
+	return err
 }
