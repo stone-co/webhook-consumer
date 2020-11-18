@@ -3,7 +3,7 @@ package validator
 import (
 	"fmt"
 
-	validator "github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator/v10"
 )
 
 type JSONValidator struct {
