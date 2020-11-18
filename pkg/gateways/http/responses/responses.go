@@ -19,3 +19,12 @@ func Send(w http.ResponseWriter, response interface{}, statusCode int) error {
 
 	return json.NewEncoder(w).Encode(response)
 }
+
+func SendError(w http.ResponseWriter, message string, statusCode int) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+
+	return json.NewEncoder(w).Encode(Error{
+		Message: message,
+	})
+}

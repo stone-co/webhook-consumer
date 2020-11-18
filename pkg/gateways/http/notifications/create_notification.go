@@ -17,16 +17,14 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var body CreateNotificationRequest
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		h.log.WithError(err).Error("body is empty or has no valid fields")
-		response := responses.Error{Message: "body is empty or has no valid fields"}
-		_ = responses.Send(w, response, http.StatusBadRequest)
+		_ = responses.SendError(w, "body is empty or has no valid fields", http.StatusBadRequest)
 		return
 	}
 
 	// Validate request body.
 	if err := h.Validate(body); err != nil {
 		h.log.WithError(err).Error("invalid request body")
-		response := responses.Error{Message: err.Error()}
-		_ = responses.Send(w, response, http.StatusBadRequest)
+		_ = responses.SendError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -38,8 +36,7 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	err := h.usecase.CreateNotification(r.Context(), input)
 	if err != nil {
 		h.log.WithError(err).Error("failed to create notification")
-		response := responses.Error{Message: "failed to create notification"}
-		_ = responses.Send(w, response, http.StatusInternalServerError)
+		_ = responses.SendError(w, "failed to create notification", http.StatusInternalServerError)
 		return
 	}
 
