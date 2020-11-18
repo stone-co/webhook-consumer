@@ -29,7 +29,7 @@ Our versioning follows [Semantic Versioning](http://semver.org).
 For more best practices details, read
 [stone-best-practices](https://github.com/stone-payments/stoneco-best-practices/).
 
-## Report bugs using Github's [issues](https://github.com/stone-co/webhooh-consumer/issues/new/choose)
+## Report bugs using Github's [issues](https://github.com/stone-co/webhook-consumer/issues/new/choose)
 All of our issues have a template with tips for describing the problem. Try to follow the proposed structure, this helps the reviewer a lot.
 
 ## License
