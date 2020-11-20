@@ -38,14 +38,14 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	encryptedPayload, err := h.verify(encryptedBody.EncryptedBody)
 	if err != nil {
 		h.log.WithError(err).Error("invalid signature")
-		_ = responses.SendError(w, err.Error(), http.StatusBadRequest) // TODO: 400?
+		_ = responses.SendError(w, err.Error(), http.StatusForbidden)
 		return
 	}
 
 	payload, err := h.decode(encryptedPayload)
 	if err != nil {
 		h.log.WithError(err).Error("invalid payload")
-		_ = responses.SendError(w, err.Error(), http.StatusBadRequest) // TODO: 400?
+		_ = responses.SendError(w, err.Error(), http.StatusForbidden)
 		return
 	}
 
