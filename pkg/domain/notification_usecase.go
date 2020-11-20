@@ -5,7 +5,13 @@ import (
 )
 
 type CreateNotificationInput struct {
-	Body string
+	Header HeaderNotification
+	Body   string
+}
+
+type HeaderNotification struct {
+	EventID   string
+	EventType string
 }
 
 type NotificationUsecase interface {
