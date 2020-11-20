@@ -123,7 +123,7 @@ func SendHook(encryptedBody string) error {
 	req.Header.Set("x-stone-webhook-event-id", "930bbd6d-0c7a-4fe4-8b50-4b82a20cb847")
 	req.Header.Set("x-stone-webhook-event-type", "cash_out_internal_transfer")
 
-	client := &http.Client{}
+	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("unable to send request to api: %v", err)

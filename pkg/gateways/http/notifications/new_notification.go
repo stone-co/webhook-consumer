@@ -78,14 +78,20 @@ func (h Handler) verify(signedBody string) (string, error) {
 		return "", fmt.Errorf("multi signature not supported")
 	}
 
-	// signature := obj.Signatures[0]
+	// Verify will all keys.
+	var plainText []byte
+	for _, verificationKey := range h.verificationKeyList {
+		plainText, err = obj.Verify(verificationKey)
+		if err == nil {
+			break
+		}
+	}
 
-	plaintext, err := obj.Verify(h.verificationKeyList[0]) // TODO: ?
 	if err != nil {
 		return "", fmt.Errorf("invalid signature: %v", err)
 	}
 
-	return string(plaintext), nil
+	return string(plainText), nil
 }
 
 func (h Handler) decode(encryptedBody string) (string, error) {
