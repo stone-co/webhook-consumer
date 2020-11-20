@@ -16,13 +16,13 @@ import (
 	"github.com/stone-co/webhook-consumer/pkg/gateways/http/notifications"
 )
 
-func NewHttpServer(config configuration.HTTPConfig, log *logrus.Logger, usecase domain.NotificationUsecase) *http.Server {
+func NewHttpServer(config configuration.Config, log *logrus.Logger, usecase domain.NotificationUsecase) *http.Server {
 	validator := validator.NewJSONValidator()
 
-	notificationsHandler := notifications.NewHandler(log, validator, usecase)
+	notificationsHandler := notifications.NewHandler(log, validator, config.PrivateKey, usecase)
 
 	api := NewApi(log, notificationsHandler)
-	return api.NewServer("0.0.0.0", config)
+	return api.NewServer("0.0.0.0", config.HTTPConfig)
 }
 
 type Api struct {

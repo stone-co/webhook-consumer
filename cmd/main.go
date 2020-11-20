@@ -38,7 +38,7 @@ func main() {
 	serverErrors := make(chan error, 1)
 
 	// NewServer HTTP Server listening for requests.
-	httpServer := http.NewHttpServer(cfg.HTTPConfig, log, usecase)
+	httpServer := http.NewHttpServer(*cfg, log, usecase)
 	go func() {
 		log.Infof("starting http api at %s", httpServer.Addr)
 		serverErrors <- httpServer.ListenAndServe()
