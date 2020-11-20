@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/stone-co/webhook-consumer/pkg/common/keys"
 	"gopkg.in/square/go-jose.v2"
 )
 
@@ -51,7 +52,7 @@ func EncryptText(keyFile string, text []byte) string {
 		log.Fatalf("reading file %s: %v", keyFile, err)
 	}
 
-	pub, err := LoadPublicKey(keyBytes)
+	pub, err := keys.LoadPublicKey(keyBytes)
 	if err != nil {
 		log.Fatalf("unable to read public key: %v", err)
 	}
@@ -69,11 +70,11 @@ func EncryptText(keyFile string, text []byte) string {
 		log.Fatalf("unable to encrypt: %v", err)
 	}
 
-	msg := obj.FullSerialize()
-	// msg, err := obj.CompactSerialize()
-	// if err != nil {
-	// 	log.Fatalf("unable to serialize message: %v", err)
-	// }
+	// msg := obj.FullSerialize()
+	msg, err := obj.CompactSerialize()
+	if err != nil {
+		log.Fatalf("unable to serialize message: %v", err)
+	}
 
 	return msg
 }
@@ -84,7 +85,7 @@ func SignText(keyFile string, text string) string {
 		log.Fatalf("reading file %s: %v", keyFile, err)
 	}
 
-	signingKey, err := LoadPrivateKey(keyBytes)
+	signingKey, err := keys.LoadPrivateKey(keyBytes)
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
 	}
