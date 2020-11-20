@@ -19,7 +19,7 @@ import (
 func NewHttpServer(config configuration.Config, log *logrus.Logger, usecase domain.NotificationUsecase) *http.Server {
 	validator := validator.NewJSONValidator()
 
-	notificationsHandler := notifications.NewHandler(log, validator, config.PrivateKey, usecase)
+	notificationsHandler := notifications.NewHandler(log, validator, config.PrivateKey, config.VerificationKey, usecase)
 
 	api := NewApi(log, notificationsHandler)
 	return api.NewServer("0.0.0.0", config.HTTPConfig)

@@ -14,9 +14,11 @@ import (
 
 // Config defines the service configuration
 type Config struct {
-	HTTPConfig     HTTPConfig
-	PrivateKeyPath string `envconfig:"PRIVATE_KEY_PATH" default:"tests/partner/mykey.pem"`
-	PrivateKey     interface{}
+	HTTPConfig      HTTPConfig
+	PrivateKeyPath  string `envconfig:"PRIVATE_KEY_PATH" default:"tests/partner/mykey.pem"`
+	PrivateKey      interface{}
+	PublicKeyPath   string `envconfig:"PUBLIC_KEY_PATH" default:"tests/stone/mykey.pub"`
+	VerificationKey interface{}
 }
 
 type HTTPConfig struct {
@@ -38,6 +40,16 @@ func LoadConfig() (*Config, error) {
 	}
 
 	config.PrivateKey, err = LoadPrivateKey(keyBytes)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read private key: %v", err)
+	}
+
+	keyBytes, err = ioutil.ReadFile(config.PublicKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("reading file %s: %v", config.PublicKeyPath, err)
+	}
+
+	config.VerificationKey, err = LoadPublicKey(keyBytes)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read public key: %v", err)
 	}
@@ -94,4 +106,32 @@ func LoadJSONWebKey(json []byte, pub bool) (*jose.JSONWebKey, error) {
 	}
 
 	return &jwk, nil
+}
+
+// LoadPublicKey loads a public key from PEM/DER/JWK-encoded data.
+func LoadPublicKey(data []byte) (interface{}, error) {
+	input := data
+
+	block, _ := pem.Decode(data)
+	if block != nil {
+		input = block.Bytes
+	}
+
+	// Try to load SubjectPublicKeyInfo
+	pub, err0 := x509.ParsePKIXPublicKey(input)
+	if err0 == nil {
+		return pub, nil
+	}
+
+	cert, err1 := x509.ParseCertificate(input)
+	if err1 == nil {
+		return cert.PublicKey, nil
+	}
+
+	jwk, err2 := LoadJSONWebKey(data, true)
+	if err2 == nil {
+		return jwk, nil
+	}
+
+	return nil, fmt.Errorf("square/go-jose: parse error, got '%s', '%s' and '%s'", err0, err1, err2)
 }
