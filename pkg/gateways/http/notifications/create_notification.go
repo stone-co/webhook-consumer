@@ -49,7 +49,6 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: forward the request headers too.
 	input := domain.CreateNotificationInput{
 		Header: domain.HeaderNotification{
 			EventID:   r.Header.Get(EventIDHeader),
