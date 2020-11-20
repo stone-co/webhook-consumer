@@ -10,17 +10,17 @@ import (
 type Handler struct {
 	log *logrus.Logger
 	*validator.JSONValidator
-	privateKey      interface{}
-	verificationKey interface{}
-	usecase         domain.NotificationUsecase
+	privateKey          interface{}
+	verificationKeyList []interface{}
+	usecase             domain.NotificationUsecase
 }
 
-func NewHandler(log *logrus.Logger, validator *validator.JSONValidator, privateKey interface{}, verificationKey interface{}, usecase domain.NotificationUsecase) *Handler {
+func NewHandler(log *logrus.Logger, validator *validator.JSONValidator, privateKey interface{}, verificationKeyList []interface{}, usecase domain.NotificationUsecase) *Handler {
 	return &Handler{
-		log:             log,
-		JSONValidator:   validator,
-		privateKey:      privateKey,
-		verificationKey: verificationKey,
-		usecase:         usecase,
+		log:                 log,
+		JSONValidator:       validator,
+		privateKey:          privateKey,
+		verificationKeyList: verificationKeyList,
+		usecase:             usecase,
 	}
 }

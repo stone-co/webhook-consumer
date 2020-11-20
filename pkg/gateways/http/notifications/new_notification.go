@@ -74,7 +74,13 @@ func (h Handler) verify(signedBody string) (string, error) {
 		return "", fmt.Errorf("unable to parse message: %v", err)
 	}
 
-	plaintext, err := obj.Verify(h.verificationKey)
+	if len(obj.Signatures) != 1 {
+		return "", fmt.Errorf("multi signature not supported")
+	}
+
+	// signature := obj.Signatures[0]
+
+	plaintext, err := obj.Verify(h.verificationKeyList[0]) // TODO: ?
 	if err != nil {
 		return "", fmt.Errorf("invalid signature: %v", err)
 	}
