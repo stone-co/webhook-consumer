@@ -2,14 +2,16 @@ package notifications
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/stone-co/webhook-consumer/pkg/domain"
 	"github.com/stone-co/webhook-consumer/pkg/gateways/http/responses"
+	"gopkg.in/square/go-jose.v2"
 )
 
 type CreateNotificationRequest struct {
-	Text string `json:"text" validate:"required"`
+	EncryptedBody string `json:"encrypted_body" validate:"required"`
 }
 
 func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
@@ -28,12 +30,20 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	decryptedBody, err := h.decode(body.EncryptedBody)
+	if err != nil {
+		h.log.WithError(err).Error("invalid encrypted body")
+		_ = responses.SendError(w, err.Error(), http.StatusBadRequest) // TODO: 400?
+		return
+	}
+
+	// TODO: forward the request headers too.
 	input := domain.CreateNotificationInput{
-		Body: body.Text,
+		Body: decryptedBody,
 	}
 
 	// Call the usecase.
-	err := h.usecase.CreateNotification(r.Context(), input)
+	err = h.usecase.CreateNotification(r.Context(), input)
 	if err != nil {
 		h.log.WithError(err).Error("failed to create notification")
 		_ = responses.SendError(w, "failed to create notification", http.StatusInternalServerError)
@@ -41,4 +51,25 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = responses.Send(w, nil, http.StatusNoContent)
+}
+
+func (h Handler) decode(encryptedBody string) (string, error) {
+	// Parse the serialized, encrypted JWE object. An error would indicate that
+	// the given input did not represent a valid message.
+	object, err := jose.ParseEncrypted(encryptedBody)
+	if err != nil {
+		return "", fmt.Errorf("parsing encrypted: %v", err)
+	}
+
+	// Now we can decrypt and get back our original plaintext. An error here
+	// would indicate the the message failed to decrypt, e.g. because the auth
+	// tag was broken or the message was tampered with.
+	decrypted, err := object.Decrypt(h.privateKey)
+	if err != nil {
+		return "", fmt.Errorf("decrypting: %v", err)
+	}
+
+	// TODO: check signature
+
+	return string(decrypted), nil
 }
