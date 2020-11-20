@@ -52,7 +52,7 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("unable to read private key: %v", err)
 	}
 
-	config.VerificationKeyList, err = loadVerificationKey(config.PublicKeyLocation)
+	config.VerificationKeyList, err = loadVerificationKeyList(config.PublicKeyLocation)
 	if err != nil {
 		return nil, fmt.Errorf("loading verification key %s: %v", config.PublicKeyLocation, err)
 	}
@@ -60,17 +60,17 @@ func LoadConfig() (*Config, error) {
 	return &config, nil
 }
 
-func loadVerificationKey(location string) ([]interface{}, error) {
+func loadVerificationKeyList(location string) ([]interface{}, error) {
 	var keyList []interface{}
 	var err error
 
 	if strings.HasPrefix(location, FileLocation) {
-		keyList, err = loadVerificationKeysFromFile(strings.TrimPrefix(location, FileLocation))
+		keyList, err = loadVerificationKeyListFromFile(strings.TrimPrefix(location, FileLocation))
 		if err != nil {
 			return nil, fmt.Errorf("loading verification key from file %s: %v", location, err)
 		}
 	} else if strings.HasPrefix(location, URLLocation) {
-		keyList, err = loadVerificationKeysFromURL(strings.TrimPrefix(location, URLLocation))
+		keyList, err = loadVerificationKeyListFromURL(strings.TrimPrefix(location, URLLocation))
 		if err != nil {
 			return nil, fmt.Errorf("loading verification key from file %s: %v", location, err)
 		}
@@ -81,7 +81,7 @@ func loadVerificationKey(location string) ([]interface{}, error) {
 	return keyList, nil
 }
 
-func loadVerificationKeysFromFile(file string) ([]interface{}, error) {
+func loadVerificationKeyListFromFile(file string) ([]interface{}, error) {
 	keyBytes, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, fmt.Errorf("reading file %s: %v", file, err)
@@ -95,7 +95,7 @@ func loadVerificationKeysFromFile(file string) ([]interface{}, error) {
 	return []interface{}{verificationKey}, nil
 }
 
-func loadVerificationKeysFromURL(serviceURL string) ([]interface{}, error) {
+func loadVerificationKeyListFromURL(serviceURL string) ([]interface{}, error) {
 	keysURL, err := url.Parse(serviceURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse url %s: %v", serviceURL, err)
