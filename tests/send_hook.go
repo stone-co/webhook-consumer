@@ -40,7 +40,9 @@ func main() {
 	}
 
 	encryptedBody := EncryptText("partner/mykey.pub", body)
-	SendHook(encryptedBody)
+	signedBody := SignText("stone/mykey.pem", encryptedBody)
+	log.Println(signedBody)
+	SendHook(signedBody)
 }
 
 func EncryptText(keyFile string, text []byte) string {
@@ -65,6 +67,37 @@ func EncryptText(keyFile string, text []byte) string {
 	obj, err := crypter.Encrypt(text)
 	if err != nil {
 		log.Fatalf("unable to encrypt: %v", err)
+	}
+
+	msg := obj.FullSerialize()
+	// msg, err := obj.CompactSerialize()
+	// if err != nil {
+	// 	log.Fatalf("unable to serialize message: %v", err)
+	// }
+
+	return msg
+}
+
+func SignText(keyFile string, text string) string {
+	keyBytes, err := ioutil.ReadFile(keyFile)
+	if err != nil {
+		log.Fatalf("reading file %s: %v", keyFile, err)
+	}
+
+	signingKey, err := LoadPrivateKey(keyBytes)
+	if err != nil {
+		log.Fatalf("unable to read private key: %v", err)
+	}
+
+	alg := jose.SignatureAlgorithm("PS256")
+	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: alg, Key: signingKey}, nil)
+	if err != nil {
+		log.Fatalf("unable to make signer: %v", err)
+	}
+
+	obj, err := signer.Sign([]byte(text))
+	if err != nil {
+		log.Fatalf("unable to sign: %v", err)
 	}
 
 	// msg := obj.FullSerialize()
