@@ -15,13 +15,13 @@ const (
 	EventTypeHeader = "X-Stone-Webhook-Event-Type"
 )
 
-type CreateNotificationRequest struct {
+type NotificationRequest struct {
 	EncryptedBody string `json:"encrypted_body" validate:"required"`
 }
 
-func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
+func (h Handler) New(w http.ResponseWriter, r *http.Request) {
 	// Decode request body.
-	var encryptedBody CreateNotificationRequest
+	var encryptedBody NotificationRequest
 	if err := json.NewDecoder(r.Body).Decode(&encryptedBody); err != nil {
 		h.log.WithError(err).Error("body is empty or has no valid fields")
 		_ = responses.SendError(w, "body is empty or has no valid fields", http.StatusBadRequest)
@@ -49,7 +49,7 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := domain.CreateNotificationInput{
+	input := domain.NotificationInput{
 		Header: domain.HeaderNotification{
 			EventID:   r.Header.Get(EventIDHeader),
 			EventType: r.Header.Get(EventTypeHeader),
@@ -58,10 +58,10 @@ func (h Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Call the usecase.
-	err = h.usecase.CreateNotification(r.Context(), input)
+	err = h.usecase.SendNotification(r.Context(), input)
 	if err != nil {
-		h.log.WithError(err).Error("failed to create notification")
-		_ = responses.SendError(w, "failed to create notification", http.StatusInternalServerError)
+		h.log.WithError(err).Error("failed to send notification")
+		_ = responses.SendError(w, "failed to send notification", http.StatusInternalServerError)
 		return
 	}
 

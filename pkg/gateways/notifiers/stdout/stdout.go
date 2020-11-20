@@ -20,7 +20,7 @@ func New(log *logrus.Logger) *Stdout {
 	}
 }
 
-func (std Stdout) Send(ctx context.Context, input domain.CreateNotificationInput) error {
+func (std Stdout) Send(ctx context.Context, input domain.NotificationInput) error {
 	std.log.Printf("Body: %s\n", input.Body)
 	std.log.Printf("Header: %+v\n", input.Header)
 

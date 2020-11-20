@@ -6,7 +6,7 @@ import (
 	"github.com/stone-co/webhook-consumer/pkg/domain"
 )
 
-func (uc NotificationUsecase) CreateNotification(ctx context.Context, input domain.CreateNotificationInput) error {
+func (uc NotificationUsecase) SendNotification(ctx context.Context, input domain.NotificationInput) error {
 	err := uc.method.Send(ctx, input)
 	return err
 }

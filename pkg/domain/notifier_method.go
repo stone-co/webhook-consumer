@@ -5,5 +5,5 @@ import (
 )
 
 type NotifierMethod interface {
-	Send(ctx context.Context, input CreateNotificationInput) error
+	Send(ctx context.Context, input NotificationInput) error
 }
