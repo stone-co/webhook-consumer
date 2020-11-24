@@ -87,3 +87,13 @@ func LoadPublicKey(data []byte) (interface{}, error) {
 
 	return nil, fmt.Errorf("square/go-jose: parse error, got '%s', '%s' and '%s'", err0, err1, err2)
 }
+
+// LoadPublicKeyFromJWK loads a public key from JWK-encoded data.
+func LoadPublicKeyFromJWK(data []byte) (*jose.JSONWebKey, error) {
+	jwk, err := LoadJSONWebKey(data, true)
+	if err == nil {
+		return jwk, nil
+	}
+
+	return nil, fmt.Errorf("square/go-jose: jwk parse error, got '%s'", err)
+}

@@ -24,9 +24,9 @@ type Config struct {
 	HTTPConfig     HTTPConfig
 	PrivateKeyPath string `envconfig:"PRIVATE_KEY_PATH" default:"tests/partner/mykey.pem"`
 	PrivateKey     interface{}
-	// PublicKeyLocation   string `envconfig:"PUBLIC_KEY_PATH" default:"file://./tests/stone/mykey.pub"`
+	// PublicKeyLocation   string `envconfig:"PUBLIC_KEY_PATH" default:"file://./tests/stone/mykey1.pub.jwt"`
 	PublicKeyLocation   string `envconfig:"PUBLIC_KEY_PATH" default:"url://https://sandbox-api.openbank.stone.com.br/api/v1/discovery/keys"`
-	VerificationKeyList []interface{}
+	VerificationKeyList []*jose.JSONWebKey
 }
 
 type HTTPConfig struct {
@@ -60,8 +60,8 @@ func LoadConfig() (*Config, error) {
 	return &config, nil
 }
 
-func loadVerificationKeyList(location string) ([]interface{}, error) {
-	var keyList []interface{}
+func loadVerificationKeyList(location string) ([]*jose.JSONWebKey, error) {
+	var keyList []*jose.JSONWebKey
 	var err error
 
 	if strings.HasPrefix(location, FileLocation) {
@@ -78,24 +78,28 @@ func loadVerificationKeyList(location string) ([]interface{}, error) {
 		return nil, fmt.Errorf("invalid public key location: %s", location)
 	}
 
+	if len(keyList) == 0 {
+		return nil, fmt.Errorf("empty key list")
+	}
+
 	return keyList, nil
 }
 
-func loadVerificationKeyListFromFile(file string) ([]interface{}, error) {
+func loadVerificationKeyListFromFile(file string) ([]*jose.JSONWebKey, error) {
 	keyBytes, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, fmt.Errorf("reading file %s: %v", file, err)
 	}
 
-	verificationKey, err := keys.LoadPublicKey(keyBytes)
+	verificationKey, err := keys.LoadPublicKeyFromJWK(keyBytes)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read public key: %v", err)
 	}
 
-	return []interface{}{verificationKey}, nil
+	return []*jose.JSONWebKey{verificationKey}, nil
 }
 
-func loadVerificationKeyListFromURL(serviceURL string) ([]interface{}, error) {
+func loadVerificationKeyListFromURL(serviceURL string) ([]*jose.JSONWebKey, error) {
 	keysURL, err := url.Parse(serviceURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse url %s: %v", serviceURL, err)
@@ -122,7 +126,7 @@ func loadVerificationKeyListFromURL(serviceURL string) ([]interface{}, error) {
 		return nil, fmt.Errorf("unable to unmarshal body: %v", err)
 	}
 
-	keyList := []interface{}{}
+	keyList := []*jose.JSONWebKey{}
 
 	for i := range r.Keys {
 		keyList = append(keyList, &r.Keys[i])

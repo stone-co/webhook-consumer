@@ -41,7 +41,7 @@ func main() {
 	}
 
 	encryptedBody := EncryptText("partner/mykey.pub", body)
-	signedBody := SignText("stone/mykey.pem", encryptedBody)
+	signedBody := SignText("stone/mykey1.pem.jwt", encryptedBody)
 	log.Println(signedBody)
 	SendHook(signedBody)
 }
