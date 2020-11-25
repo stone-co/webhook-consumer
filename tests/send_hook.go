@@ -43,15 +43,24 @@ func main() {
 	encryptedBody := EncryptText("partner/fakekey.pub", body)
 	signedBody := SignText("stone/fakekey1.pem.jwt", encryptedBody)
 	log.Println(signedBody)
-	SendHook(signedBody)
+	err = SendHook(signedBody)
+	if err != nil {
+		log.Fatalf("sending hook 1: %v", err)
+	}
 
 	signedBody = SignText("stone/fakekey2.pem.jwt", encryptedBody)
 	log.Println(signedBody)
-	SendHook(signedBody)
+	err = SendHook(signedBody)
+	if err != nil {
+		log.Fatalf("sending hook 2: %v", err)
+	}
 
 	signedBody = SignText("stone/fakekey3.pem.jwt", encryptedBody)
 	log.Println(signedBody)
-	SendHook(signedBody)
+	err = SendHook(signedBody)
+	if err != nil {
+		log.Fatalf("sending hook 3: %v", err)
+	}
 }
 
 func EncryptText(keyFile string, text []byte) string {
@@ -127,6 +136,10 @@ func SendHook(encryptedBody string) error {
 	}
 
 	req, err := http.NewRequest("POST", "http://localhost:3000/api/v0/notifications", bytes.NewBuffer(requestBody))
+	if err != nil {
+		log.Fatalf("unable to create a request: %v", err)
+	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-stone-webhook-event-id", "930bbd6d-0c7a-4fe4-8b50-4b82a20cb847")
 	req.Header.Set("x-stone-webhook-event-type", "cash_out_internal_transfer")
