@@ -22,9 +22,11 @@ const (
 // Config defines the service configuration
 type Config struct {
 	HTTPConfig     HTTPConfig
-	PrivateKeyPath string `envconfig:"PRIVATE_KEY_PATH" default:"tests/partner/mykey.pem"`
+	PrivateKeyPath string `envconfig:"PRIVATE_KEY_PATH" default:"tests/partner/fakekey.pem"`
 	PrivateKey     interface{}
-	// PublicKeyLocation   string `envconfig:"PUBLIC_KEY_PATH" default:"file://./tests/stone/mykey1.pub.jwt"`
+	// PublicKeyLocation can be used to specify a file or a URL.
+	// To specify a file: "file://./tests/stone/fakekey1.pub.jwt"
+	// To specify a URL: "url://https://sandbox-api.openbank.stone.com.br/api/v1/discovery/keys"
 	PublicKeyLocation   string `envconfig:"PUBLIC_KEY_PATH" default:"url://https://sandbox-api.openbank.stone.com.br/api/v1/discovery/keys"`
 	VerificationKeyList []*jose.JSONWebKey
 }
@@ -85,18 +87,30 @@ func loadVerificationKeyList(location string) ([]*jose.JSONWebKey, error) {
 	return keyList, nil
 }
 
-func loadVerificationKeyListFromFile(file string) ([]*jose.JSONWebKey, error) {
-	keyBytes, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, fmt.Errorf("reading file %s: %v", file, err)
+func loadVerificationKeyListFromFile(fileList string) ([]*jose.JSONWebKey, error) {
+	result := []*jose.JSONWebKey{}
+	for _, file := range strings.Split(fileList, ";") {
+		file = strings.TrimSpace(file)
+		if file == "" {
+			break
+		}
+		keyBytes, err := ioutil.ReadFile(file)
+		if err != nil {
+			return nil, fmt.Errorf("reading file %s: %v", file, err)
+		}
+
+		verificationKey, err := keys.LoadPublicKeyFromJWK(keyBytes)
+		if err != nil {
+			return nil, fmt.Errorf("unable to read public key: %v", err)
+		}
+		result = append(result, verificationKey)
 	}
 
-	verificationKey, err := keys.LoadPublicKeyFromJWK(keyBytes)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read public key: %v", err)
+	if result == nil {
+		return nil, fmt.Errorf("empty file list")
 	}
 
-	return []*jose.JSONWebKey{verificationKey}, nil
+	return result, nil
 }
 
 func loadVerificationKeyListFromURL(serviceURL string) ([]*jose.JSONWebKey, error) {

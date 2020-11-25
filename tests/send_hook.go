@@ -40,8 +40,16 @@ func main() {
 		log.Fatalf("marshaling data: %v", err)
 	}
 
-	encryptedBody := EncryptText("partner/mykey.pub", body)
-	signedBody := SignText("stone/mykey1.pem.jwt", encryptedBody)
+	encryptedBody := EncryptText("partner/fakekey.pub", body)
+	signedBody := SignText("stone/fakekey1.pem.jwt", encryptedBody)
+	log.Println(signedBody)
+	SendHook(signedBody)
+
+	signedBody = SignText("stone/fakekey2.pem.jwt", encryptedBody)
+	log.Println(signedBody)
+	SendHook(signedBody)
+
+	signedBody = SignText("stone/fakekey3.pem.jwt", encryptedBody)
 	log.Println(signedBody)
 	SendHook(signedBody)
 }
