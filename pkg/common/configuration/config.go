@@ -132,7 +132,7 @@ func loadVerificationKeyListFromURL(serviceURL string) ([]*jose.JSONWebKey, erro
 	}
 
 	type responseBody struct {
-		Keys []jose.JSONWebKey `json:"keys"`
+		Keys []*jose.JSONWebKey `json:"keys"`
 	}
 
 	var r responseBody
@@ -140,11 +140,5 @@ func loadVerificationKeyListFromURL(serviceURL string) ([]*jose.JSONWebKey, erro
 		return nil, fmt.Errorf("unable to unmarshal body: %v", err)
 	}
 
-	keyList := []*jose.JSONWebKey{}
-
-	for i := range r.Keys {
-		keyList = append(keyList, &r.Keys[i])
-	}
-
-	return keyList, nil
+	return r.Keys, nil
 }
