@@ -69,23 +69,27 @@ func LoadPublicKey(data []byte) (interface{}, error) {
 		input = block.Bytes
 	}
 
+	var aggErr error
+
 	// Try to load SubjectPublicKeyInfo
-	pub, err0 := x509.ParsePKIXPublicKey(input)
-	if err0 == nil {
+	pub, err := x509.ParsePKIXPublicKey(input)
+	if err == nil {
 		return pub, nil
 	}
+	aggErr = err
 
-	cert, err1 := x509.ParseCertificate(input)
-	if err1 == nil {
+	cert, err := x509.ParseCertificate(input)
+	if err == nil {
 		return cert.PublicKey, nil
 	}
+	aggErr = fmt.Errorf("%s: %w", aggErr, err)
 
-	jwk, err2 := LoadJSONWebKey(data, true)
-	if err2 == nil {
+	jwk, err := LoadJSONWebKey(data, true)
+	if err == nil {
 		return jwk, nil
 	}
 
-	return nil, fmt.Errorf("square/go-jose: parse error, got '%s', '%s' and '%s'", err0, err1, err2)
+	return nil, fmt.Errorf("%s: %w", aggErr, err)
 }
 
 // LoadPublicKeyFromJWK loads a public key from JWK-encoded data.
