@@ -1,7 +1,9 @@
 package domain
 
-import "context"
+import (
+	"context"
+)
 
 type NotifierMethod interface {
-	Send(ctx context.Context, body string) error
+	Send(ctx context.Context, input NotificationInput) error
 }

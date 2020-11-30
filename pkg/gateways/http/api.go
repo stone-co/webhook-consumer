@@ -16,13 +16,13 @@ import (
 	"github.com/stone-co/webhook-consumer/pkg/gateways/http/notifications"
 )
 
-func NewHttpServer(config configuration.HTTPConfig, log *logrus.Logger, usecase domain.NotificationUsecase) *http.Server {
+func NewHttpServer(config configuration.Config, log *logrus.Logger, usecase domain.NotificationUsecase) *http.Server {
 	validator := validator.NewJSONValidator()
 
-	notificationsHandler := notifications.NewHandler(log, validator, usecase)
+	notificationsHandler := notifications.NewHandler(log, validator, config.PrivateKey, config.VerificationKeyList, usecase)
 
 	api := NewApi(log, notificationsHandler)
-	return api.NewServer("0.0.0.0", config)
+	return api.NewServer("0.0.0.0", config.HTTPConfig)
 }
 
 type Api struct {
@@ -45,7 +45,7 @@ func (a *Api) NewServer(host string, cfg configuration.HTTPConfig) *http.Server 
 	// Handlers
 	r.HandleFunc("/healthcheck", a.Healthcheck.Get).Methods(http.MethodGet)
 	r.HandleFunc("/metrics", promhttp.Handler().ServeHTTP).Methods(http.MethodGet)
-	r.HandleFunc("/api/v0/notifications", a.notifications.Create).Methods(http.MethodPost)
+	r.HandleFunc("/api/v0/notifications", a.notifications.New).Methods(http.MethodPost)
 
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
 

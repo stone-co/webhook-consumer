@@ -4,10 +4,16 @@ import (
 	"context"
 )
 
-type CreateNotificationInput struct {
-	Body string
+type NotificationInput struct {
+	Header HeaderNotification
+	Body   string
+}
+
+type HeaderNotification struct {
+	EventID   string
+	EventType string
 }
 
 type NotificationUsecase interface {
-	CreateNotification(ctx context.Context, input CreateNotificationInput) error
+	SendNotification(ctx context.Context, input NotificationInput) error
 }
