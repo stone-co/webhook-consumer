@@ -23,7 +23,9 @@ func main() {
 		log.WithError(err).Fatal("unable to load app configuration")
 	}
 
-	// Stdout method only in this PR.
+	log.Infof("config: %s", cfg)
+
+	// Stdout method is used only to debug purpose.
 	method := stdout.New(log)
 
 	usecase := usecase.NewNotificationUsecase(log, method)

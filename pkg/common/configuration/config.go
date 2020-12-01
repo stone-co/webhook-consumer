@@ -62,6 +62,11 @@ func LoadConfig() (*Config, error) {
 	return &config, nil
 }
 
+func (cfg Config) String() string {
+	return fmt.Sprintf("port:[%d] shutdown_timeout:[%s] private_key_path:[%s] public_key_location:[%s]",
+		cfg.HTTPConfig.Port, cfg.HTTPConfig.ShutdownTimeout, cfg.PrivateKeyPath, cfg.PublicKeyLocation)
+}
+
 func loadVerificationKeyList(location string) ([]*jose.JSONWebKey, error) {
 	var keyList []*jose.JSONWebKey
 	var err error
