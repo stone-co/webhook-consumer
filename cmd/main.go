@@ -24,7 +24,7 @@ func main() {
 
 	log.Infof("config: %s", cfg)
 
-	notifiers, err := defineNotifiers(log, cfg.NotifierList)
+	notifiers, err := defineNotifiers(cfg, log)
 	if err != nil {
 		log.WithError(err).Fatalf("unable to define notifiers: %v", err)
 	}

@@ -29,8 +29,9 @@ type Config struct {
 	// To specify a URL: "url://https://sandbox-api.openbank.stone.com.br/api/v1/discovery/keys"
 	PublicKeyLocation   string `envconfig:"PUBLIC_KEY_PATH" default:"url://https://sandbox-api.openbank.stone.com.br/api/v1/discovery/keys"`
 	VerificationKeyList []*jose.JSONWebKey
-	NotifierList        string `envconfig:"NOTIFIER_LIST" default:"stdout"`
-	ProxyNotifier       ProxyNotifierConfig
+	// NotifierList has stdout and proxy option.
+	NotifierList  string `envconfig:"NOTIFIER_LIST" default:"stdout"`
+	ProxyNotifier ProxyNotifierConfig
 }
 
 type HTTPConfig struct {
@@ -39,7 +40,8 @@ type HTTPConfig struct {
 }
 
 type ProxyNotifierConfig struct {
-	APIUrl string `envconfig:"PROXY_NOTIFIER_API_URL"`
+	Url     string        `envconfig:"PROXY_NOTIFIER_URL"`
+	Timeout time.Duration `envconfig:"PROXY_NOTIFIER_TIMEOUT" default:"10s"`
 }
 
 func LoadConfig() (*Config, error) {

@@ -5,11 +5,13 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"github.com/stone-co/webhook-consumer/pkg/common/configuration"
 	"github.com/stone-co/webhook-consumer/pkg/domain"
+	"github.com/stone-co/webhook-consumer/pkg/gateways/notifiers/proxy"
 	"github.com/stone-co/webhook-consumer/pkg/gateways/notifiers/stdout"
 )
 
-func defineNotifiers(log *logrus.Logger, notifiers string) ([]domain.NotifierMethod, error) {
+func defineNotifiers(cfg *configuration.Config, log *logrus.Logger) ([]domain.NotifierMethod, error) {
 
 	type notifierInfo struct {
 		notifier domain.NotifierMethod
@@ -21,14 +23,14 @@ func defineNotifiers(log *logrus.Logger, notifiers string) ([]domain.NotifierMet
 		"stdout": {
 			notifier: stdout.New(log),
 		},
-		"proxyapi": {
-			notifier: stdout.New(log),
+		"proxy": {
+			notifier: proxy.New(log),
 		},
 	}
 
 	result := []domain.NotifierMethod{}
 
-	for _, notifier := range strings.Split(notifiers, ";") {
+	for _, notifier := range strings.Split(cfg.NotifierList, ";") {
 		notifier = strings.TrimSpace(notifier)
 		if notifier == "" {
 			continue
@@ -42,6 +44,10 @@ func defineNotifiers(log *logrus.Logger, notifiers string) ([]domain.NotifierMet
 
 		if info.used {
 			return nil, fmt.Errorf("duplicated notifier: %v", notifier)
+		}
+
+		if err := info.notifier.Configure(cfg); err != nil {
+			return nil, fmt.Errorf("configure failed in [%s] notifier: %v", notifier, err)
 		}
 
 		info.used = true
