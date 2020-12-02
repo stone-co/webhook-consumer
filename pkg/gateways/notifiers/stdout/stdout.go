@@ -8,7 +8,7 @@ import (
 	"github.com/stone-co/webhook-consumer/pkg/domain"
 )
 
-var _ domain.NotifierMethod = &StdoutNotifier{}
+var _ domain.Notifier = &StdoutNotifier{}
 
 type StdoutNotifier struct {
 	log *logrus.Logger

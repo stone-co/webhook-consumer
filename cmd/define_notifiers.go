@@ -11,14 +11,14 @@ import (
 	"github.com/stone-co/webhook-consumer/pkg/gateways/notifiers/stdout"
 )
 
-func defineNotifiers(cfg *configuration.Config, log *logrus.Logger) ([]domain.NotifierMethod, error) {
+func defineNotifiers(cfg *configuration.Config, log *logrus.Logger) ([]domain.Notifier, error) {
 
 	type notifierInfo struct {
-		notifier domain.NotifierMethod
+		notifier domain.Notifier
 		used     bool
 	}
 
-	// Stdout method is used only to debug purpose.
+	// Stdout notifier is used only to debug purpose.
 	var notificationTypes = map[string]notifierInfo{
 		"stdout": {
 			notifier: stdout.New(log),
@@ -28,7 +28,7 @@ func defineNotifiers(cfg *configuration.Config, log *logrus.Logger) ([]domain.No
 		},
 	}
 
-	result := []domain.NotifierMethod{}
+	result := []domain.Notifier{}
 
 	for _, notifier := range strings.Split(cfg.NotifierList, ";") {
 		notifier = strings.TrimSpace(notifier)

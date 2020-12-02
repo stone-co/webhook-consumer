@@ -14,7 +14,7 @@ import (
 	"github.com/stone-co/webhook-consumer/pkg/gateways/http/notifications"
 )
 
-var _ domain.NotifierMethod = &ProxyNotifier{}
+var _ domain.Notifier = &ProxyNotifier{}
 
 type ProxyNotifier struct {
 	log        *logrus.Logger
