@@ -29,11 +29,17 @@ type Config struct {
 	// To specify a URL: "url://https://sandbox-api.openbank.stone.com.br/api/v1/discovery/keys"
 	PublicKeyLocation   string `envconfig:"PUBLIC_KEY_PATH" default:"url://https://sandbox-api.openbank.stone.com.br/api/v1/discovery/keys"`
 	VerificationKeyList []*jose.JSONWebKey
+	NotifierList        string `envconfig:"NOTIFIER_LIST" default:"stdout"`
+	ProxyNotifier       ProxyNotifierConfig
 }
 
 type HTTPConfig struct {
 	Port            int           `envconfig:"API_PORT" default:"3000"`
 	ShutdownTimeout time.Duration `envconfig:"API_SHUTDOWN_TIMEOUT" default:"5s"`
+}
+
+type ProxyNotifierConfig struct {
+	APIUrl string `envconfig:"PROXY_NOTIFIER_API_URL"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -63,8 +69,8 @@ func LoadConfig() (*Config, error) {
 }
 
 func (cfg Config) String() string {
-	return fmt.Sprintf("port:[%d] shutdown_timeout:[%s] private_key_path:[%s] public_key_location:[%s]",
-		cfg.HTTPConfig.Port, cfg.HTTPConfig.ShutdownTimeout, cfg.PrivateKeyPath, cfg.PublicKeyLocation)
+	return fmt.Sprintf("port:[%d] shutdown_timeout:[%s] private_key_path:[%s] public_key_location:[%s] notifier_list:[%s]",
+		cfg.HTTPConfig.Port, cfg.HTTPConfig.ShutdownTimeout, cfg.PrivateKeyPath, cfg.PublicKeyLocation, cfg.NotifierList)
 }
 
 func loadVerificationKeyList(location string) ([]*jose.JSONWebKey, error) {

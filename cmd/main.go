@@ -11,7 +11,6 @@ import (
 	"github.com/stone-co/webhook-consumer/pkg/common/configuration"
 	"github.com/stone-co/webhook-consumer/pkg/domain/usecase"
 	"github.com/stone-co/webhook-consumer/pkg/gateways/http"
-	"github.com/stone-co/webhook-consumer/pkg/gateways/notifiers/stdout"
 )
 
 func main() {
@@ -25,10 +24,12 @@ func main() {
 
 	log.Infof("config: %s", cfg)
 
-	// Stdout method is used only to debug purpose.
-	method := stdout.New(log)
+	notifiers, err := defineNotifiers(log, cfg.NotifierList)
+	if err != nil {
+		log.WithError(err).Fatalf("unable to define notifiers: %v", err)
+	}
 
-	usecase := usecase.NewNotificationUsecase(log, method)
+	usecase := usecase.NewNotificationUsecase(log, notifiers)
 
 	// Make a channel to listen for an interrupt or terminate signal from the OS.
 	// Use a buffered channel because the signal package requires it.
