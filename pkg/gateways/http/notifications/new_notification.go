@@ -35,6 +35,13 @@ func (h Handler) New(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check for mandatory headers.
+	if r.Header.Get(EventIDHeader) == "" || r.Header.Get(EventTypeHeader) == "" {
+		h.log.Errorf("%s and %s headers are mandatories", EventIDHeader, EventTypeHeader)
+		_ = responses.SendError(w, fmt.Sprintf("%s and %s headers are mandatories", EventIDHeader, EventTypeHeader), http.StatusBadRequest)
+		return
+	}
+
 	encryptedPayload, err := h.verify(encryptedBody.EncryptedBody)
 	if err != nil {
 		h.log.WithError(err).Error("invalid signature")
