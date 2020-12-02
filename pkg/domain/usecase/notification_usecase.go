@@ -9,13 +9,13 @@ import (
 var _ domain.NotificationUsecase = &NotificationUsecase{}
 
 type NotificationUsecase struct {
-	log    *logrus.Logger
-	method domain.NotifierMethod
+	log     *logrus.Logger
+	methods []domain.NotifierMethod
 }
 
-func NewNotificationUsecase(log *logrus.Logger, method domain.NotifierMethod) *NotificationUsecase {
+func NewNotificationUsecase(log *logrus.Logger, methods []domain.NotifierMethod) *NotificationUsecase {
 	return &NotificationUsecase{
-		log:    log,
-		method: method,
+		log:     log,
+		methods: methods,
 	}
 }
