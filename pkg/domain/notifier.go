@@ -9,5 +9,5 @@ import (
 
 type Notifier interface {
 	Configure(config *configuration.Config, log *logrus.Logger) error
-	Send(ctx context.Context, input NotificationInput) error
+	Send(ctx context.Context, eventTypeHeader, eventIDHeader, body string) error
 }

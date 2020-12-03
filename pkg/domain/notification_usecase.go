@@ -5,8 +5,8 @@ import (
 )
 
 type NotificationInput struct {
-	Header HeaderNotification
-	Body   string
+	Header        HeaderNotification
+	EncryptedBody string
 }
 
 type HeaderNotification struct {

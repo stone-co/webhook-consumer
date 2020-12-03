@@ -23,10 +23,10 @@ func (n *StdoutNotifier) Configure(config *configuration.Config, log *logrus.Log
 	return nil
 }
 
-func (n StdoutNotifier) Send(ctx context.Context, input domain.NotificationInput) error {
+func (n StdoutNotifier) Send(ctx context.Context, eventTypeHeader, eventIDHeader, body string) error {
 	log := n.log.WithField("notifier", "stdout")
-	log.Printf("Body: %s\n", input.Body)
-	log.Printf("Header: %+v\n", input.Header)
+	log.Printf("event headers: type[%s] id[%s]\n", eventTypeHeader, eventIDHeader)
+	log.Printf("body: %s\n", body)
 
 	return nil
 }

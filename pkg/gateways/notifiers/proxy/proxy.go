@@ -41,18 +41,18 @@ func (n *ProxyNotifier) Configure(config *configuration.Config, log *logrus.Logg
 	return nil
 }
 
-func (n ProxyNotifier) Send(ctx context.Context, input domain.NotificationInput) error {
+func (n ProxyNotifier) Send(ctx context.Context, eventTypeHeader, eventIDHeader, body string) error {
 	log := n.log.WithField("notifier", "proxy")
 
-	req, err := http.NewRequest(http.MethodPost, n.serviceURL.String(), strings.NewReader(input.Body))
+	req, err := http.NewRequest(http.MethodPost, n.serviceURL.String(), strings.NewReader(body))
 	if err != nil {
 		log.WithError(err).Info("unable to create a request")
 		return fmt.Errorf("unable to create a request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(notifications.EventIDHeader, input.Header.EventID)
-	req.Header.Set(notifications.EventTypeHeader, input.Header.EventType)
+	req.Header.Set(notifications.EventIDHeader, eventIDHeader)
+	req.Header.Set(notifications.EventTypeHeader, eventTypeHeader)
 
 	client := &http.Client{
 		Timeout: n.timeout,

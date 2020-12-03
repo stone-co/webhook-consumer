@@ -35,7 +35,7 @@ func main() {
 		log.WithError(err).Fatalf("unable to define notifiers: %v", err)
 	}
 
-	usecase := usecase.NewNotificationUsecase(log, notifiers)
+	usecase := usecase.NewNotificationUsecase(log, keys, notifiers)
 
 	// Make a channel to listen for an interrupt or terminate signal from the OS.
 	// Use a buffered channel because the signal package requires it.
@@ -47,7 +47,7 @@ func main() {
 	serverErrors := make(chan error, 1)
 
 	// NewServer HTTP Server listening for requests.
-	httpServer := http.NewHttpServer(*cfg, keys, log, usecase)
+	httpServer := http.NewHttpServer(*cfg, log, usecase)
 	go func() {
 		log.Infof("starting http api at %s", httpServer.Addr)
 		serverErrors <- httpServer.ListenAndServe()
