@@ -37,6 +37,8 @@ func (n *ProxyNotifier) Configure(config *configuration.Config) error {
 		return fmt.Errorf("failed to parse url '%s': %v", config.ProxyNotifier.Url, err)
 	}
 
+	n.log.WithField("notifier", "proxy").Infof("url:[%s] timeout:[%s]", config.ProxyNotifier.Url, n.timeout.String())
+
 	return nil
 }
 
