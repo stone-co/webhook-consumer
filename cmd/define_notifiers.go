@@ -27,7 +27,7 @@ func defineNotifiers(cfg *configuration.Config, log *logrus.Logger) ([]domain.No
 	result := []domain.Notifier{}
 
 	for _, notifier := range notifiersToConfig {
-		impl, _ := notificationTypes[notifier]
+		impl := notificationTypes[notifier]
 		if err := impl.Configure(cfg, log); err != nil {
 			return nil, fmt.Errorf("configure failed in [%s] notifier: %v", notifier, err)
 		}
