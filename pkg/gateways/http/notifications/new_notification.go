@@ -87,7 +87,7 @@ func (h Handler) verify(signedBody string) (string, error) {
 
 	// Verify will all keys.
 	var plainText []byte
-	for _, verificationKey := range h.verificationKeyList {
+	for _, verificationKey := range h.keys.VerificationKeyList {
 		plainText, err = obj.Verify(verificationKey)
 		if err == nil {
 			break
@@ -112,7 +112,7 @@ func (h Handler) decode(encryptedBody string) (string, error) {
 	// Now we can decrypt and get back our original plaintext. An error here
 	// would indicate the the message failed to decrypt, e.g. because the auth
 	// tag was broken or the message was tampered with.
-	decrypted, err := object.Decrypt(h.privateKey)
+	decrypted, err := object.Decrypt(h.keys.PrivateKey)
 	if err != nil {
 		return "", fmt.Errorf("decrypting: %v", err)
 	}

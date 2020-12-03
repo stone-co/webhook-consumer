@@ -2,8 +2,8 @@ package notifications
 
 import (
 	"github.com/sirupsen/logrus"
-	"gopkg.in/square/go-jose.v2"
 
+	"github.com/stone-co/webhook-consumer/pkg/common/keys"
 	"github.com/stone-co/webhook-consumer/pkg/common/validator"
 	"github.com/stone-co/webhook-consumer/pkg/domain"
 )
@@ -11,17 +11,15 @@ import (
 type Handler struct {
 	log *logrus.Logger
 	*validator.JSONValidator
-	privateKey          interface{}
-	verificationKeyList []*jose.JSONWebKey
-	usecase             domain.NotificationUsecase
+	keys    *keys.Config
+	usecase domain.NotificationUsecase
 }
 
-func NewHandler(log *logrus.Logger, validator *validator.JSONValidator, privateKey interface{}, verificationKeyList []*jose.JSONWebKey, usecase domain.NotificationUsecase) *Handler {
+func NewHandler(log *logrus.Logger, validator *validator.JSONValidator, keys *keys.Config, usecase domain.NotificationUsecase) *Handler {
 	return &Handler{
-		log:                 log,
-		JSONValidator:       validator,
-		privateKey:          privateKey,
-		verificationKeyList: verificationKeyList,
-		usecase:             usecase,
+		log:           log,
+		JSONValidator: validator,
+		keys:          keys,
+		usecase:       usecase,
 	}
 }

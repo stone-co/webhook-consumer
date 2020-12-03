@@ -10,16 +10,17 @@ import (
 	"github.com/urfave/negroni"
 
 	"github.com/stone-co/webhook-consumer/pkg/common/configuration"
+	"github.com/stone-co/webhook-consumer/pkg/common/keys"
 	"github.com/stone-co/webhook-consumer/pkg/common/validator"
 	"github.com/stone-co/webhook-consumer/pkg/domain"
 	"github.com/stone-co/webhook-consumer/pkg/gateways/http/healthcheck"
 	"github.com/stone-co/webhook-consumer/pkg/gateways/http/notifications"
 )
 
-func NewHttpServer(config configuration.Config, log *logrus.Logger, usecase domain.NotificationUsecase) *http.Server {
+func NewHttpServer(config configuration.Config, keys *keys.Config, log *logrus.Logger, usecase domain.NotificationUsecase) *http.Server {
 	validator := validator.NewJSONValidator()
 
-	notificationsHandler := notifications.NewHandler(log, validator, config.PrivateKey, config.VerificationKeyList, usecase)
+	notificationsHandler := notifications.NewHandler(log, validator, keys, usecase)
 
 	api := NewApi(log, notificationsHandler)
 	return api.NewServer("0.0.0.0", config.HTTPConfig)

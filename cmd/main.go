@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/stone-co/webhook-consumer/pkg/common/configuration"
+	"github.com/stone-co/webhook-consumer/pkg/common/keys"
 	"github.com/stone-co/webhook-consumer/pkg/domain/usecase"
 	"github.com/stone-co/webhook-consumer/pkg/gateways/http"
 )
@@ -23,6 +24,11 @@ func main() {
 	}
 
 	log.Infof("config: %s", cfg)
+
+	keys, err := keys.LoadKeys(cfg.PrivateKeyPath, cfg.PublicKeyLocation)
+	if err != nil {
+		log.WithError(err).Fatal("unable to load keys")
+	}
 
 	notifiers, err := defineNotifiers(cfg, log)
 	if err != nil {
@@ -41,7 +47,7 @@ func main() {
 	serverErrors := make(chan error, 1)
 
 	// NewServer HTTP Server listening for requests.
-	httpServer := http.NewHttpServer(*cfg, log, usecase)
+	httpServer := http.NewHttpServer(*cfg, keys, log, usecase)
 	go func() {
 		log.Infof("starting http api at %s", httpServer.Addr)
 		serverErrors <- httpServer.ListenAndServe()

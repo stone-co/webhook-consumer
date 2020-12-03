@@ -46,7 +46,7 @@ func (n ProxyNotifier) Send(ctx context.Context, input domain.NotificationInput)
 
 	req, err := http.NewRequest(http.MethodPost, n.serviceURL.String(), strings.NewReader(input.Body))
 	if err != nil {
-		log.Infof("unable to create a request: %w", err)
+		log.WithError(err).Info("unable to create a request")
 		return fmt.Errorf("unable to create a request: %w", err)
 	}
 
@@ -60,7 +60,7 @@ func (n ProxyNotifier) Send(ctx context.Context, input domain.NotificationInput)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Infof("unable to send request to service: %v", err)
+		log.WithError(err).Info("unable to send request to service")
 		return fmt.Errorf("unable to send request to service: %v", err)
 	}
 
