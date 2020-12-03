@@ -14,13 +14,12 @@ type StdoutNotifier struct {
 	log *logrus.Logger
 }
 
-func New(log *logrus.Logger) *StdoutNotifier {
-	return &StdoutNotifier{
-		log: log,
-	}
+func New() *StdoutNotifier {
+	return &StdoutNotifier{}
 }
 
-func (n StdoutNotifier) Configure(config *configuration.Config) error {
+func (n *StdoutNotifier) Configure(config *configuration.Config, log *logrus.Logger) error {
+	n.log = log
 	return nil
 }
 

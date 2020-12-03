@@ -22,13 +22,11 @@ type ProxyNotifier struct {
 	timeout    time.Duration
 }
 
-func New(log *logrus.Logger) *ProxyNotifier {
-	return &ProxyNotifier{
-		log: log,
-	}
+func New() *ProxyNotifier {
+	return &ProxyNotifier{}
 }
 
-func (n *ProxyNotifier) Configure(config *configuration.Config) error {
+func (n *ProxyNotifier) Configure(config *configuration.Config, log *logrus.Logger) error {
 	var err error
 
 	n.timeout = config.ProxyNotifier.Timeout
@@ -36,6 +34,7 @@ func (n *ProxyNotifier) Configure(config *configuration.Config) error {
 	if err != nil || config.ProxyNotifier.Url == "" {
 		return fmt.Errorf("failed to parse url '%s': %v", config.ProxyNotifier.Url, err)
 	}
+	n.log = log
 
 	n.log.WithField("notifier", "proxy").Infof("url:[%s] timeout:[%s]", config.ProxyNotifier.Url, n.timeout.String())
 

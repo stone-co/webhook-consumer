@@ -11,49 +11,59 @@ import (
 	"github.com/stone-co/webhook-consumer/pkg/gateways/notifiers/stdout"
 )
 
+// Stdout notifier is used only to debug purpose.
+var notificationTypes = map[string]domain.Notifier{
+	"stdout": stdout.New(),
+	"proxy":  proxy.New(),
+}
+
 func defineNotifiers(cfg *configuration.Config, log *logrus.Logger) ([]domain.Notifier, error) {
 
-	type notifierInfo struct {
-		notifier domain.Notifier
-		used     bool
-	}
-
-	// Stdout notifier is used only to debug purpose.
-	var notificationTypes = map[string]notifierInfo{
-		"stdout": {
-			notifier: stdout.New(log),
-		},
-		"proxy": {
-			notifier: proxy.New(log),
-		},
+	notifiersToConfig, err := extractNotifiersFromConfig(cfg.NotifierList)
+	if err != nil {
+		return nil, fmt.Errorf("configure failed when loading notifiers: %v", err)
 	}
 
 	result := []domain.Notifier{}
 
-	for _, notifier := range strings.Split(cfg.NotifierList, ";") {
+	for _, notifier := range notifiersToConfig {
+		impl, _ := notificationTypes[notifier]
+		if err := impl.Configure(cfg, log); err != nil {
+			return nil, fmt.Errorf("configure failed in [%s] notifier: %v", notifier, err)
+		}
+
+		result = append(result, impl)
+	}
+
+	return result, nil
+}
+
+func extractNotifiersFromConfig(notifiers string) ([]string, error) {
+
+	usedNotifications := map[string]bool{}
+
+	result := []string{}
+
+	for _, notifier := range strings.Split(notifiers, ";") {
 		notifier = strings.TrimSpace(notifier)
 		if notifier == "" {
 			continue
 		}
 
 		notifier = strings.ToLower(notifier)
-		info, ok := notificationTypes[notifier]
+		_, ok := notificationTypes[notifier]
 		if !ok {
 			return nil, fmt.Errorf("undefined notifier: %v", notifier)
 		}
 
-		if info.used {
+		_, used := usedNotifications[notifier]
+		if used {
 			return nil, fmt.Errorf("duplicated notifier: %v", notifier)
 		}
 
-		if err := info.notifier.Configure(cfg); err != nil {
-			return nil, fmt.Errorf("configure failed in [%s] notifier: %v", notifier, err)
-		}
+		usedNotifications[notifier] = true
 
-		info.used = true
-		notificationTypes[notifier] = info
-
-		result = append(result, info.notifier)
+		result = append(result, notifier)
 	}
 
 	if len(result) == 0 {
