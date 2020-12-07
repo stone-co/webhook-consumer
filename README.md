@@ -50,9 +50,5 @@ $ ./build/webhook-consumer
 
 ## Usage
 
-At this time, just a simple notification method was implemented (stdout).
+At this time, just a simple notifier was implemented (stdout).
 After start the webhook, is possible to make a call and the data will be printed on the stdout.
-
-```bash
-curl -i -X POST localhost:3000/api/v0/notifications -d '{"text":"aaa456"}'
-```

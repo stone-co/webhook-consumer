@@ -9,9 +9,9 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/stone-co/webhook-consumer/pkg/common/configuration"
+	"github.com/stone-co/webhook-consumer/pkg/common/keys"
 	"github.com/stone-co/webhook-consumer/pkg/domain/usecase"
 	"github.com/stone-co/webhook-consumer/pkg/gateways/http"
-	"github.com/stone-co/webhook-consumer/pkg/gateways/notifiers/stdout"
 )
 
 func main() {
@@ -23,10 +23,19 @@ func main() {
 		log.WithError(err).Fatal("unable to load app configuration")
 	}
 
-	// Stdout method only in this PR.
-	method := stdout.New(log)
+	log.Infof("config: %s", cfg)
 
-	usecase := usecase.NewNotificationUsecase(log, method)
+	keys, err := keys.LoadKeys(cfg.PrivateKeyPath, cfg.PublicKeyLocation)
+	if err != nil {
+		log.WithError(err).Fatal("unable to load keys")
+	}
+
+	notifiers, err := defineNotifiers(cfg, log)
+	if err != nil {
+		log.WithError(err).Fatalf("unable to define notifiers: %v", err)
+	}
+
+	usecase := usecase.NewNotificationUsecase(log, keys, notifiers)
 
 	// Make a channel to listen for an interrupt or terminate signal from the OS.
 	// Use a buffered channel because the signal package requires it.

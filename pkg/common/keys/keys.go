@@ -1,103 +1,124 @@
 package keys
 
 import (
-	"crypto/x509"
-	"encoding/pem"
-	"errors"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
 
 	"gopkg.in/square/go-jose.v2"
 )
 
-// LoadPrivateKey loads a private key from PEM/DER/JWK-encoded data.
-func LoadPrivateKey(data []byte) (interface{}, error) {
-	input := data
+const (
+	FileLocation = "file://"
+	URLLocation  = "url://"
+)
 
-	block, _ := pem.Decode(data)
-	if block != nil {
-		input = block.Bytes
-	}
-
-	var priv interface{}
-	priv, err0 := x509.ParsePKCS1PrivateKey(input)
-	if err0 == nil {
-		return priv, nil
-	}
-
-	priv, err1 := x509.ParsePKCS8PrivateKey(input)
-	if err1 == nil {
-		return priv, nil
-	}
-
-	priv, err2 := x509.ParseECPrivateKey(input)
-	if err2 == nil {
-		return priv, nil
-	}
-
-	jwk, err3 := LoadJSONWebKey(input, false)
-	if err3 == nil {
-		return jwk, nil
-	}
-
-	return nil, fmt.Errorf("square/go-jose: parse error, got '%s', '%s', '%s' and '%s'", err0, err1, err2, err3)
+type Config struct {
+	PrivateKey          interface{}
+	VerificationKeyList []*jose.JSONWebKey
 }
 
-func LoadJSONWebKey(json []byte, pub bool) (*jose.JSONWebKey, error) {
-	var jwk jose.JSONWebKey
-	err := jwk.UnmarshalJSON(json)
+func LoadKeys(privateKeyPath, publicKeyLocation string) (*Config, error) {
+	var config Config
+
+	keyBytes, err := ioutil.ReadFile(privateKeyPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading file %s: %v", privateKeyPath, err)
 	}
 
-	if !jwk.Valid() {
-		return nil, errors.New("invalid JWK key")
+	config.PrivateKey, err = LoadPrivateKey(keyBytes)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read private key: %v", err)
 	}
 
-	if jwk.IsPublic() != pub {
-		return nil, errors.New("priv/pub JWK key mismatch")
+	config.VerificationKeyList, err = loadVerificationKeyList(publicKeyLocation)
+	if err != nil {
+		return nil, fmt.Errorf("loading verification key %s: %v", publicKeyLocation, err)
 	}
 
-	return &jwk, nil
+	return &config, nil
 }
 
-// LoadPublicKey loads a public key from PEM/DER/JWK-encoded data.
-func LoadPublicKey(data []byte) (interface{}, error) {
-	input := data
+func loadVerificationKeyList(location string) ([]*jose.JSONWebKey, error) {
+	var keyList []*jose.JSONWebKey
+	var err error
 
-	block, _ := pem.Decode(data)
-	if block != nil {
-		input = block.Bytes
+	if strings.HasPrefix(location, FileLocation) {
+		keyList, err = loadVerificationKeyListFromFile(strings.TrimPrefix(location, FileLocation))
+		if err != nil {
+			return nil, fmt.Errorf("loading verification key from file %s: %v", location, err)
+		}
+	} else if strings.HasPrefix(location, URLLocation) {
+		keyList, err = loadVerificationKeyListFromURL(strings.TrimPrefix(location, URLLocation))
+		if err != nil {
+			return nil, fmt.Errorf("loading verification key from file %s: %v", location, err)
+		}
+	} else {
+		return nil, fmt.Errorf("invalid public key location: %s", location)
 	}
 
-	var aggErr error
-
-	// Try to load SubjectPublicKeyInfo
-	pub, err := x509.ParsePKIXPublicKey(input)
-	if err == nil {
-		return pub, nil
-	}
-	aggErr = err
-
-	cert, err := x509.ParseCertificate(input)
-	if err == nil {
-		return cert.PublicKey, nil
-	}
-	aggErr = fmt.Errorf("%s: %w", aggErr, err)
-
-	jwk, err := LoadJSONWebKey(data, true)
-	if err == nil {
-		return jwk, nil
+	if len(keyList) == 0 {
+		return nil, fmt.Errorf("empty key list")
 	}
 
-	return nil, fmt.Errorf("%s: %w", aggErr, err)
+	return keyList, nil
 }
 
-// LoadPublicKeyFromJWK loads a public key from JWK-encoded data.
-func LoadPublicKeyFromJWK(data []byte) (*jose.JSONWebKey, error) {
-	jwk, err := LoadJSONWebKey(data, true)
-	if err == nil {
-		return jwk, nil
+func loadVerificationKeyListFromFile(fileList string) ([]*jose.JSONWebKey, error) {
+	result := []*jose.JSONWebKey{}
+	for _, file := range strings.Split(fileList, ";") {
+		file = strings.TrimSpace(file)
+		if file == "" {
+			break
+		}
+		keyBytes, err := ioutil.ReadFile(file)
+		if err != nil {
+			return nil, fmt.Errorf("reading file %s: %v", file, err)
+		}
+
+		verificationKey, err := LoadPublicKeyFromJWK(keyBytes)
+		if err != nil {
+			return nil, fmt.Errorf("unable to read public key: %v", err)
+		}
+		result = append(result, verificationKey)
 	}
 
-	return nil, fmt.Errorf("square/go-jose: jwk parse error, got '%s'", err)
+	if result == nil {
+		return nil, fmt.Errorf("empty file list")
+	}
+
+	return result, nil
+}
+
+func loadVerificationKeyListFromURL(serviceURL string) ([]*jose.JSONWebKey, error) {
+	keysURL, err := url.Parse(serviceURL)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse url %s: %v", serviceURL, err)
+	}
+
+	client := http.DefaultClient
+	response, err := client.Get(keysURL.String())
+	if err != nil {
+		return nil, fmt.Errorf("unable to get url keys %s: %v", keysURL.String(), err)
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read body: %v", err)
+	}
+
+	type responseBody struct {
+		Keys []*jose.JSONWebKey `json:"keys"`
+	}
+
+	var r responseBody
+	if err = json.Unmarshal(body, &r); err != nil {
+		return nil, fmt.Errorf("unable to unmarshal body: %v", err)
+	}
+
+	return r.Keys, nil
 }

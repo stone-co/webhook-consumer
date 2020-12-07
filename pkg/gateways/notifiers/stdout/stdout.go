@@ -4,25 +4,29 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
-
+	"github.com/stone-co/webhook-consumer/pkg/common/configuration"
 	"github.com/stone-co/webhook-consumer/pkg/domain"
 )
 
-var _ domain.NotifierMethod = &Stdout{}
+var _ domain.Notifier = &StdoutNotifier{}
 
-type Stdout struct {
+type StdoutNotifier struct {
 	log *logrus.Logger
 }
 
-func New(log *logrus.Logger) *Stdout {
-	return &Stdout{
-		log: log,
-	}
+func New() *StdoutNotifier {
+	return &StdoutNotifier{}
 }
 
-func (std Stdout) Send(ctx context.Context, input domain.NotificationInput) error {
-	std.log.Printf("Body: %s\n", input.Body)
-	std.log.Printf("Header: %+v\n", input.Header)
+func (n *StdoutNotifier) Configure(config *configuration.Config, log *logrus.Logger) error {
+	n.log = log
+	return nil
+}
+
+func (n StdoutNotifier) Send(ctx context.Context, eventTypeHeader, eventIDHeader, body string) error {
+	log := n.log.WithField("notifier", "stdout")
+	log.Printf("event headers: type[%s] id[%s]\n", eventTypeHeader, eventIDHeader)
+	log.Printf("body: %s\n", body)
 
 	return nil
 }
