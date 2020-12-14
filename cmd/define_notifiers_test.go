@@ -23,6 +23,11 @@ func Test_extractNotifiersFromConfig(t *testing.T) {
 			want: []string{"stdout", "proxy"},
 		},
 		{
+			name: "Valid config with three notifiers",
+			args: "stdout;proxy;redis",
+			want: []string{"stdout", "proxy", "redis"},
+		},
+		{
 			name: "Config is case insensitive",
 			args: "stDOut;PROxy",
 			want: []string{"stdout", "proxy"},
