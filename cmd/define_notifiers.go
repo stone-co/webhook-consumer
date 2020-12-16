@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/stone-co/webhook-consumer/pkg/common/configuration"
 	"github.com/stone-co/webhook-consumer/pkg/domain"
 	"github.com/stone-co/webhook-consumer/pkg/gateways/notifiers/proxy"
+	"github.com/stone-co/webhook-consumer/pkg/gateways/notifiers/redis"
 	"github.com/stone-co/webhook-consumer/pkg/gateways/notifiers/stdout"
 )
 
@@ -15,20 +15,19 @@ import (
 var notificationTypes = map[string]domain.Notifier{
 	"stdout": stdout.New(),
 	"proxy":  proxy.New(),
+	"redis":  redis.New(),
 }
 
-func defineNotifiers(cfg *configuration.Config, log *logrus.Logger) ([]domain.Notifier, error) {
-
-	notifiersToConfig, err := extractNotifiersFromConfig(cfg.NotifierList)
+func defineNotifiers(notifierList string, log *logrus.Logger) ([]domain.Notifier, error) {
+	notifiersToConfig, err := extractNotifiersFromConfig(notifierList)
 	if err != nil {
 		return nil, fmt.Errorf("configure failed when loading notifiers: %v", err)
 	}
 
 	result := []domain.Notifier{}
-
 	for _, notifier := range notifiersToConfig {
 		impl := notificationTypes[notifier]
-		if err := impl.Configure(cfg, log); err != nil {
+		if err := impl.Configure(log); err != nil {
 			return nil, fmt.Errorf("configure failed in [%s] notifier: %v", notifier, err)
 		}
 
@@ -39,11 +38,9 @@ func defineNotifiers(cfg *configuration.Config, log *logrus.Logger) ([]domain.No
 }
 
 func extractNotifiersFromConfig(notifiers string) ([]string, error) {
-
 	usedNotifications := map[string]bool{}
 
 	result := []string{}
-
 	for _, notifier := range strings.Split(notifiers, ";") {
 		notifier = strings.TrimSpace(notifier)
 		if notifier == "" {
@@ -62,7 +59,6 @@ func extractNotifiersFromConfig(notifiers string) ([]string, error) {
 		}
 
 		usedNotifications[notifier] = true
-
 		result = append(result, notifier)
 	}
 

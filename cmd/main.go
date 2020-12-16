@@ -30,7 +30,7 @@ func main() {
 		log.WithError(err).Fatal("unable to load keys")
 	}
 
-	notifiers, err := defineNotifiers(cfg, log)
+	notifiers, err := defineNotifiers(cfg.NotifierList, log)
 	if err != nil {
 		log.WithError(err).Fatalf("unable to define notifiers: %v", err)
 	}
