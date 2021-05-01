@@ -2,6 +2,8 @@
 
 The purpose of the Webhook Consumer is to provide a easy way to consume the notifications from the Stone services.
 
+<img src="/docs/overview.png" alt="Image of webhook consumer diagram" align="center" />
+
 ## Possible actions when receives a notification
 
 When the Webhook Consumer receives a notification from Stone services, it can take some of the following actions:
