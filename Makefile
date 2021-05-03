@@ -23,8 +23,13 @@ test:
 
 .PHONY: compile
 compile: clean
-	@echo "==> Go Building WebHookConsumer"
+	@echo "==> Go Building webhook-consumer"
 	@env GOOS=${OS} GOARCH=amd64 go build -v -o build/${NAME} ${PKG}/
+
+.PHONY: build
+build: compile
+	@echo "==> Building Docker image to webhook-consumer"
+	@docker build -t ${REGISTRY}/${NAME}:${VERSION} build -f build/Dockerfile
 
 .PHONY: clean
 clean:
