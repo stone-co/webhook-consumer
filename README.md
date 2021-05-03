@@ -55,6 +55,57 @@ $ ./build/webhook-consumer
 At this time, just a simple notifier was implemented (stdout).
 After start the webhook, is possible to make a call and the data will be printed on the stdout.
 
+Notifier List:
+
+- stdout
+- http proxy
+- redis
+
+_You can implements a notifier and submit a Pull Request here._
+
+### Setup
+
+Define `PORT` environment variable to Open Banking Organization send messages to
+Webhook Consumer, and customize shutdown timeout with `API_SHUTDOWN_TIMEOUT`.
+The defaults values are _3000_ and _5s_.
+
+The environment variable `PRIVATE_KEY_PATH` contains a path to your key file,
+your private key made to Open Banking Partner, and `PUBLIC_KEY_PATH` identify
+the location of public key from Open Banking Organization.
+
+The environment variable `NOTIFIER_LIST` must be a string, with notifiers name
+separated by `;` character.
+
+```bash
+$ NOTIFIER_LIST="stdout;proxy;redis"
+```
+
+If you use **http proxy** as a notifer you must set the following environment
+variables:
+
+- PROXY_NOTIFIER_URL
+- PROXY_NOTIFIER_TIMEOUT _(default = 10s)_
+
+If you use **redis** as a notifer you must set the following environment
+variables:
+
+- REDIS_ADDR _required_
+- REDIS_PORT _required_
+- REDIS_PASSWORD
+- REDIS_USE_TLS _default false_
+- REDIS_MAX_IDLE _default 100_
+- REDIS_MAX_ACTIVE _default 1000_
+- REDIS_IDLE_TIMEOUT _default 1m_
+- REDIS_CONNECT_TIMEOUT _default 1s_
+- REDIS_READ_TIMEOUT _default 300ms_
+- REDIS_WRITE_TIMEOUT _default 300ms_
+
+Check configure notifer files to view all environment variables:
+
+- [proxy http](/pkg/gateways/notifiers/proxy/configure.go)
+- [redis](/pkg/gateways/notifiers/redis/config.go)
+
+
 ### Usage with Docker
 
 First build the Docker Image, or get at Docker Hub.
