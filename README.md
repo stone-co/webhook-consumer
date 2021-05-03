@@ -68,8 +68,9 @@ $ docker run -v $(pwd)/tests:/usr/share/certificates -e PRIVATE_KEY_PATH="/usr/s
 
 Environment variables, and default values:
 
-- PUBLIC_KEY_PATH="tests/partner/fakekey.pem"
-- NOTIFIER_LIST="url://https://sandbox-api.openbank.stone.com.br/api/v1/discovery/keys"
+- PRIVATE_KEY_PATH="tests/partner/fakekey.pem"
+- PUBLIC_KEY_PATH="url://https://sandbox-api.openbank.stone.com.br/api/v1/discovery/keys"
+- NOTIFIER_LIST=stdout
 - API_PORT="3000"
 - API_SHUTDOWN_TIMEOUT="5s"
 
