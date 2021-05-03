@@ -61,7 +61,8 @@ Notifier List:
 - http proxy
 - redis
 
-_You can implements a notifier and submit a Pull Request here._
+_You can implements a notifier and submit a Pull Request, or showing interest by
+creating an issue with the type of notifier_
 
 ### Setup
 
